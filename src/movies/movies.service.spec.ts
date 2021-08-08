@@ -24,25 +24,59 @@ describe('MoviesService', () => {
     });
   });
 
-  describe("getOne", ()=>{
-    it('should return a moive', ()=>{
+  describe('getOne', () => {
+    it('should return a movie', () => {
       service.create({
         title: 'Test Movie',
         genres: ['test'],
-        year:2020,
+        year: 2000,
       });
       const movie = service.getOne(1);
       expect(movie).toBeDefined();
-      expect(movie.id).toEqual(1);
+    });
+
+    it('should throw 404 error', () => {
+      try {
+        service.getOne(999);
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+      }
     });
   });
 
-  it("should return 404 error", ()=>{
-    try{
-      service.getOne(999);
-    }catch(e){
-      expect(e).toBeInstanceOf(NotFoundException);
-    }
-  });
+  describe("deleteOne", ()=>{
+    it('deletes a movie', ()=>{
+      service.create({
+        title: 'Test Movie',
+        genres: ['test'],
+        year:2000,
+      });
+      const allMovies = service.getAll();
+      service.deleteOne(1);
+      const afterDelete = service.getAll();
+      expect(afterDelete.length).toEqual(allMovies.length-1);
+    });
 
+    it('should return a 404', ()=>{
+      try{
+        service.deleteOne(999);
+      }catch(e){
+        expect(e).toBeInstanceOf(NotFoundException);
+      }
+    });
+  });
+  
+  describe("create", ()=>{
+    it("should create a movie", ()=>{
+      const beforeCreate = service.getAll().length;
+      service.create({
+        title: 'Test Movie',
+        genres: ['test'],
+        year: 2000,
+      });
+      const afterCreate = service.getAll().length;
+      expect(afterCreate).toBeGreaterThan(beforeCreate);
+    })    
+  })
+  
 });
