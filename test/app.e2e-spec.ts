@@ -6,12 +6,19 @@ import { AppModule } from './../src/app.module';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+        new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    )
     await app.init();
   });
 
@@ -24,7 +31,7 @@ describe('AppController (e2e)', () => {
 
   describe("/movies", ()=>{
     it("/movies (GET)", ()=>{
-      sreturn request(app.getHttpServer())
+      return request(app.getHttpServer())
       .get("/movies")
       .expect(200)
       .expect([]);
@@ -41,11 +48,51 @@ describe('AppController (e2e)', () => {
       .expect(201);
     });
 
+    it('POST', ()=>{
+      return request(app.getHttpServer())
+      .post('/movies')
+      .send({
+        title: 'Test',
+        year:2000,
+        genres: ['test'],
+        other:' thina',
+      })
+      .expect(400);
+    });
+
     it("DELETE", ()=>{
       return request(app.getHttpServer())
       .delete('movies').
-      expect(404));
+      expect(404);
     })
   });
   
+  desribe('/movies/:id', ()=>{
+    it("GET 200", ()=>{
+      return request(app.getHttpServer())
+      .get('/movies/1')
+      .expect(200);
+    });
+
+    it('GET 404', ()=>{
+      return request(app.getHttpServer())
+      .get('/movies/999')
+      .expect(404);
+    });
+
+    it('PATCH', ()=>{
+      return request(app.getHttpServer())
+      .patch('/movies/1')
+      .send({title: 'Updated Test'})
+      .expect(201);
+    });
+
+    it('DELETE', ()=>{
+      return request(app.getHttpServer())
+      .delete('/movies/1')
+      .expect(200);
+    });
+    it.todo("PATCH");
+  });
+
 });
